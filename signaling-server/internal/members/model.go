@@ -10,6 +10,7 @@ type Member struct {
 	Name       string `json:"name"`
 	Surname    string `json:"surname"`
 	Identifier string `json:"identifier" gorm:"index"`
+	CallID     *uint  `json:"call_id"`
 	gorm.Model
 }
 

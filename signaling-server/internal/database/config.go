@@ -17,6 +17,8 @@ func ConnectToDatabase() error {
 	}
 	DbConnect := os.Getenv("DB_CONNECT")
 	db, err := gorm.Open(postgres.Open(DbConnect), &gorm.Config{})
+
+	Migration()
 	if err != nil {
 		return err
 	}

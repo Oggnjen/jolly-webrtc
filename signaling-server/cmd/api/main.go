@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"signaling-server/internal/calls"
 	"signaling-server/internal/database"
 	"signaling-server/internal/members"
 )
@@ -15,12 +16,18 @@ func main() {
 	if err != nil {
 		return
 	}
-	members.Migrate()
+	//members.Migrate()
+	//calls.Migrate()
 	router := gin.Default()
 
 	membersGroup := router.Group("/members")
 	{
 		membersGroup.POST("", members.MakeNewMemberHandler)
+	}
+
+	callsGroup := router.Group("/calls")
+	{
+		callsGroup.POST("", calls.CreateCallHandler)
 	}
 
 	err = router.Run("localhost:8080")
