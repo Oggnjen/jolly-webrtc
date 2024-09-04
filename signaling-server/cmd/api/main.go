@@ -28,6 +28,7 @@ func main() {
 	callsGroup := router.Group("/calls")
 	{
 		callsGroup.POST("", calls.CreateCallHandler)
+		callsGroup.POST("/join", calls.JoinCallHandler)
 	}
 
 	err = router.Run("localhost:8080")
