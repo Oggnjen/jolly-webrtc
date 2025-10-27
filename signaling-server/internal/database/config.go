@@ -1,20 +1,27 @@
 package database
 
 import (
+	"fmt"
+	"log"
+	"os"
+
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
-	"os"
 )
 
 var DB *gorm.DB
 
 func ConnectToDatabase() error {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	environment := os.Getenv("ENVIRONMENT")
+	if environment != "PRODUCTION" {
+		err := godotenv.Load()
+		if err != nil {
+			fmt.Println(err)
+			log.Fatal("Error loading .env file")
+		}
 	}
+
 	DbConnect := os.Getenv("DB_CONNECT")
 	db, err := gorm.Open(postgres.Open(DbConnect), &gorm.Config{})
 

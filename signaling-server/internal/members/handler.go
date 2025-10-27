@@ -1,8 +1,9 @@
 package members
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func MakeNewMemberHandler(c *gin.Context) {
@@ -20,5 +21,4 @@ func MakeNewMemberHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, createdMember)
-	return
 }

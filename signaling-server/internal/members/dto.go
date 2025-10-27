@@ -1,11 +1,10 @@
 package members
 
 type MemberDto struct {
-	Name       string `json:"name"`
-	Surname    string `json:"surname"`
+	Nickname   string `json:"nickname"`
 	Identifier string `json:"identifier"`
 }
 
 func (member Member) MapToMemberDto() MemberDto {
-	return MemberDto{Name: member.Name, Surname: member.Surname, Identifier: member.Identifier}
+	return MemberDto{Nickname: member.Nickname, Identifier: member.Identifier}
 }

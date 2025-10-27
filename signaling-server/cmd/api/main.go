@@ -1,11 +1,13 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"signaling-server/internal/calls"
 	"signaling-server/internal/database"
 	"signaling-server/internal/members"
+	"signaling-server/internal/socket"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
@@ -19,7 +21,8 @@ func main() {
 	//members.Migrate()
 	//calls.Migrate()
 	router := gin.Default()
-
+	router.Use(CORSMiddleware())
+	socket.InitializeHub()
 	membersGroup := router.Group("/members")
 	{
 		membersGroup.POST("", members.MakeNewMemberHandler)
@@ -31,8 +34,27 @@ func main() {
 		callsGroup.POST("/join", calls.JoinCallHandler)
 	}
 
-	err = router.Run("localhost:8080")
+	router.GET("/ws/:identifier", socket.HandleSocketConnection)
+
+	err = router.Run("localhost:8081")
 	if err != nil {
 		return
+	}
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT, DELETE")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
 	}
 }

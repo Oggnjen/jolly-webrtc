@@ -1,16 +1,16 @@
 package members
 
 import (
-	"github.com/google/uuid"
 	"signaling-server/internal/database"
+
+	"github.com/google/uuid"
 )
 
 func makeNewMember(dto *MemberDto) (MemberDto, error) {
 	id := uuid.New()
 
 	member := Member{
-		Name:       dto.Name,
-		Surname:    dto.Surname,
+		Nickname:   dto.Nickname,
 		Identifier: id.String(),
 	}
 	result := database.DB.Create(&member)

@@ -1,14 +1,14 @@
 package members
 
 import (
-	"gorm.io/gorm"
 	"log"
 	"signaling-server/internal/database"
+
+	"gorm.io/gorm"
 )
 
 type Member struct {
-	Name       string `json:"name"`
-	Surname    string `json:"surname"`
+	Nickname   string `json:"nickname"`
 	Identifier string `json:"identifier" gorm:"index"`
 	CallID     *uint  `json:"call_id"`
 	gorm.Model

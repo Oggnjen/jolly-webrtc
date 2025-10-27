@@ -3,10 +3,11 @@ package database
 import (
 	"database/sql"
 	"errors"
+	"os"
+
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"os"
 )
 
 func Migration() {
@@ -28,6 +29,5 @@ func Migration() {
 	err = m.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		panic(err)
-		return
 	}
 }
