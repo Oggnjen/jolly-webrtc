@@ -1,8 +1,9 @@
 package calls
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func CreateCallHandler(c *gin.Context) {
@@ -15,7 +16,6 @@ func CreateCallHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, createdCall)
-	return
 }
 
 func JoinCallHandler(c *gin.Context) {
@@ -28,5 +28,4 @@ func JoinCallHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusAccepted, joinedCall)
-	return
 }

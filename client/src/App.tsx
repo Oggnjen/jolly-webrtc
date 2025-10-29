@@ -1,16 +1,28 @@
 import "./App.css";
-import { Layout, UserInfo } from "./components";
-import { useInitializeUserStore, WebsocketWrapper } from "./logic-layer";
+import { CallDecision, Layout, MainCamera, UserInfo } from "./components";
+import {
+  useIdentifier,
+  useInitializeUserStore,
+  WebsocketWrapper,
+} from "./logic-layer";
+import { MediaStoreProvider } from "./media-context";
 
 function App() {
   useInitializeUserStore();
+  const userIdentifier = useIdentifier();
   return (
     <>
-      <WebsocketWrapper>
-        <Layout>
-          <UserInfo />
-        </Layout>
-      </WebsocketWrapper>
+      <MediaStoreProvider>
+        <WebsocketWrapper>
+          <Layout>
+            <div>
+              <MainCamera />
+              {userIdentifier == null && <UserInfo />}
+              {userIdentifier != null && <CallDecision />}
+            </div>
+          </Layout>
+        </WebsocketWrapper>
+      </MediaStoreProvider>
     </>
   );
 }
