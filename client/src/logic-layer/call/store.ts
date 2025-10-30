@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface Member {
   identifier: string;
@@ -16,10 +16,10 @@ interface CallState {
 }
 
 const configuration = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
-export const useCallStore = create<CallState>((set) => ({
+export const callStore = create<CallState>((set) => ({
   callIdentifier: null,
   setCallIdentifier: (callIdentifier) => {
     set({ callIdentifier });

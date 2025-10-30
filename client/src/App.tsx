@@ -1,11 +1,7 @@
-import "./App.css";
-import { CallDecision, Layout, MainCamera, UserInfo } from "./components";
-import {
-  useIdentifier,
-  useInitializeUserStore,
-  WebsocketWrapper,
-} from "./logic-layer";
-import { MediaStoreProvider } from "./media-context";
+import './App.css';
+import { CallDecision, Layout, UserInfo } from './components';
+import { useIdentifier, useInitializeUserStore, WebsocketWrapper } from './logic-layer';
+import { MediaStoreProvider } from './media-context';
 
 function App() {
   useInitializeUserStore();
@@ -16,7 +12,6 @@ function App() {
         <WebsocketWrapper>
           <Layout>
             <div>
-              <MainCamera />
               {userIdentifier == null && <UserInfo />}
               {userIdentifier != null && <CallDecision />}
             </div>

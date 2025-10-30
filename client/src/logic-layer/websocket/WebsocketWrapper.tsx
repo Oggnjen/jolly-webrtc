@@ -1,9 +1,9 @@
-import React, { useEffect, useState, type ReactNode } from "react";
-import { useIdentifier } from "../user/hooks";
+import { useEffect, type ReactNode } from 'react';
+import { useIdentifier } from '../user/hooks';
+import type { SendToSignalingServerEvent } from './types';
 
 export const WebsocketWrapper = ({ children }: { children: ReactNode }) => {
-  const [messages, setMessages] = useState<any[]>([]);
-  const [ws, setWs] = useState<WebSocket | null>(null);
+  // const [ws, setWs] = useState<WebSocket | null>(null);
   const identifier = useIdentifier();
   useEffect(() => {
     // Establish WebSocket connection
@@ -11,11 +11,14 @@ export const WebsocketWrapper = ({ children }: { children: ReactNode }) => {
       const newWs = new WebSocket(`ws://localhost:8081/ws/${identifier}`);
 
       newWs.onopen = () => {
-        console.log("WebSocket connection established.");
+        console.log('WebSocket connection established.');
         // Send initial message or subscribe to topics
-        newWs.send(JSON.stringify({ type: "subscribe", topic: "updates" }));
       };
 
+      window.addEventListener('send-to-signaling-server', ((e: SendToSignalingServerEvent) => {
+        console.log('saljem', e);
+        newWs?.send(e.detail.payload);
+      }) as EventListener);
       newWs.onmessage = (event) => {
         console.log(event);
         // const data = JSON.parse(event.data);
@@ -23,14 +26,14 @@ export const WebsocketWrapper = ({ children }: { children: ReactNode }) => {
       };
 
       newWs.onclose = () => {
-        console.log("WebSocket connection closed.");
+        console.log('WebSocket connection closed.');
       };
 
       newWs.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        console.error('WebSocket error:', error);
       };
 
-      setWs(newWs);
+      // setWs(newWs);
 
       // Clean up on component unmount
       return () => {

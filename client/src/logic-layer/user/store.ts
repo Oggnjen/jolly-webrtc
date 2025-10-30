@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { create } from "zustand";
+import { useEffect } from 'react';
+import { create } from 'zustand';
 
 interface UserState {
   nickname: string | null;
@@ -8,14 +8,14 @@ interface UserState {
   setIdentifier: (identifier: string | null) => void;
 }
 
-export const useUserStore = create<UserState>((set) => ({
+export const userStore = create<UserState>((set) => ({
   nickname: null,
   setNickname: (nickname) => {
     set({ nickname });
     if (nickname) {
-      localStorage.setItem("nickname", nickname);
+      localStorage.setItem('nickname', nickname);
     } else {
-      localStorage.removeItem("nickname");
+      localStorage.removeItem('nickname');
     }
   },
   identifier: null,
@@ -23,10 +23,10 @@ export const useUserStore = create<UserState>((set) => ({
 }));
 
 export function useInitializeUserStore() {
-  const setNickname = useUserStore((state) => state.setNickname);
+  const setNickname = userStore((state) => state.setNickname);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("nickname");
+    const savedUser = localStorage.getItem('nickname');
     if (savedUser) {
       setNickname(savedUser);
     }

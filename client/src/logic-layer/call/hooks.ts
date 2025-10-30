@@ -1,25 +1,27 @@
-import { useIdentifier } from "../user/hooks";
-import { joinCall, makeNewCall } from "./service";
-import { useCallStore } from "./store";
+import { dispatchSendOffer } from '../events/functions';
+import { useIdentifier } from '../user/hooks';
+
+import { joinCall, makeNewCall } from './service';
+import { callStore } from './store';
 
 export function useCallIdentifier() {
-  const { callIdentifier } = useCallStore();
+  const { callIdentifier } = callStore();
   return callIdentifier;
 }
 
 export function useMembers() {
-  const { members } = useCallStore();
+  const { members } = callStore();
   return members;
 }
 
 export function useMembersIdentifiers() {
-  const { members } = useCallStore();
+  const { members } = callStore();
   return Object.keys(members);
 }
 
 export function useCreateCall() {
   const userIdentifer = useIdentifier();
-  const { setCallIdentifier } = useCallStore();
+  const { setCallIdentifier } = callStore();
   return () => {
     if (userIdentifer) {
       makeNewCall(userIdentifer).then((res) => {
@@ -31,15 +33,24 @@ export function useCreateCall() {
 
 export function useJoinCall() {
   const userIdentifer = useIdentifier();
-  const { setCallIdentifier, addMember } = useCallStore();
+  const { setCallIdentifier, addMember } = callStore();
   return (callIdentifier: string) => {
     if (userIdentifer) {
       joinCall(userIdentifer, callIdentifier).then((res) => {
         setCallIdentifier(res.data.identifier);
         res.data.members.forEach((m) => {
           addMember(m.identifier, m.nickname);
+          dispatchSendOffer(m.identifier);
         });
       });
     }
+  };
+}
+
+export function useGetPeerConnectionFromMember() {
+  const { members } = callStore();
+
+  return (id: string) => {
+    return members[id].peerConnection;
   };
 }
