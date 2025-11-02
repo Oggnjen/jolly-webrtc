@@ -12,7 +12,9 @@ type Hub struct {
 }
 
 type Data struct {
-	Sender    string
-	Recipient string
-	RawData   string
+	Sender     string
+	Recipient  string
+	RawData    string
+	Type       string
+	SenderName string
 }

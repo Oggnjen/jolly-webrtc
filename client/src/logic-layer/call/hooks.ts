@@ -1,8 +1,8 @@
-import { dispatchSendOffer } from '../events/functions';
-import { useIdentifier } from '../user/hooks';
+import { dispatchSendOffer } from "../events/functions";
+import { useIdentifier } from "../user/hooks";
 
-import { joinCall, makeNewCall } from './service';
-import { callStore } from './store';
+import { joinCall, makeNewCall } from "./service";
+import { callStore } from "./store";
 
 export function useCallIdentifier() {
   const { callIdentifier } = callStore();
@@ -40,7 +40,7 @@ export function useJoinCall() {
         setCallIdentifier(res.data.identifier);
         res.data.members.forEach((m) => {
           addMember(m.identifier, m.nickname);
-          dispatchSendOffer(m.identifier);
+          dispatchSendOffer(m.identifier, m.nickname);
         });
       });
     }
@@ -53,4 +53,14 @@ export function useGetPeerConnectionFromMember() {
   return (id: string) => {
     return members[id].peerConnection;
   };
+}
+
+export function usePeerConnectionFromMember(memberId: string) {
+  const { members } = callStore();
+  return members[memberId].peerConnection;
+}
+
+export function useMemberName(memberId: string) {
+  const { members } = callStore();
+  return members[memberId].nickname;
 }

@@ -4,6 +4,8 @@ export {
   useCallIdentifier,
   useMembers,
   useMembersIdentifiers,
+  usePeerConnectionFromMember,
+  useMemberName,
 } from "./call/hooks";
 
 export { WebsocketWrapper } from "./websocket/WebsocketWrapper";

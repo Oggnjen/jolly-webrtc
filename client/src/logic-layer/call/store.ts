@@ -1,9 +1,10 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface Member {
   identifier: string;
   nickname: string;
   peerConnection: RTCPeerConnection;
+  mediaStream: MediaStream | undefined;
 }
 
 interface CallState {
@@ -13,10 +14,12 @@ interface CallState {
   addMember: (id: string, name: string) => void;
   removeMember: (id: string) => void;
   clearMembers: () => void;
+  myStream: MediaStream | undefined;
+  setMyMediaStream: (stream: MediaStream) => void;
 }
 
 const configuration = {
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
 export const callStore = create<CallState>((set) => ({
@@ -26,11 +29,20 @@ export const callStore = create<CallState>((set) => ({
   },
   members: {},
   addMember: (id, name) => {
+    const peerConnection = new RTCPeerConnection(configuration);
     const member: Member = {
       identifier: id,
       nickname: name,
-      peerConnection: new RTCPeerConnection(configuration),
+      peerConnection,
+      mediaStream: undefined,
     };
+    const { myStream } = callStore.getState();
+    if (myStream)
+      callStore
+        .getState()
+        .myStream?.getTracks()
+        .forEach((t) => peerConnection.addTrack(t, myStream));
+
     set((state) => ({ members: { ...state.members, [id]: member } }));
   },
   removeMember: (id: string) => {
@@ -42,4 +54,6 @@ export const callStore = create<CallState>((set) => ({
   clearMembers: () => {
     set({ members: {} });
   },
+  myStream: undefined,
+  setMyMediaStream: (stream: MediaStream) => set({ myStream: stream }),
 }));
