@@ -9,7 +9,7 @@ export const UserInfo = () => {
   return (
     <div>
       <MainCamera />
-      <div className='bg-[#edfcff] p-4 rounded-xl shadow-2xl'>
+      <div className='bg-[#edfcff] p-4 rounded-xl shadow-2xl max-w-[400px] mx-auto'>
         <div className='text-center text-2xl font-semibold'>Enter your nickname</div>
         <div className='flex justify-center mt-4 gap-4'>
           <Input value={nickname} setValue={setNickname} />

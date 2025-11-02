@@ -15,10 +15,16 @@ export const MainCamera = () => {
   }, [myStream]);
 
   return (
-    <div>
-      {myStream == undefined && <div>I can't see you</div>}
+    <div className=''>
+      {myStream == undefined && (
+        <div className='h-[480px] w-[680px] rounded-xl bg-white shadow-2xl flex justify-center items-center-safe mx-auto'>
+          I can't see you
+        </div>
+      )}
 
-      <video ref={videoRef} autoPlay playsInline muted className='rounded-xl mb-4' />
+      {myStream != undefined && (
+        <video ref={videoRef} autoPlay playsInline muted className='rounded-xl mb-4 max-h-[480px] mx-auto' />
+      )}
       {myStream == undefined && members.length == 0 && (
         <div className='flex justify-center my-2'>
           <Button
