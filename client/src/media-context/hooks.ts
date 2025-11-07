@@ -1,6 +1,6 @@
-import { useContext } from "react";
-import { MediaStoreContext } from "./MediaContext";
-import { callStore } from "../logic-layer/call/store";
+import { useContext } from 'react';
+import { MediaStoreContext } from './MediaContext';
+import { callStore } from '../logic-layer/call/store';
 
 export function useMyVideoStream() {
   const { videoStream } = useContext(MediaStoreContext);
@@ -47,10 +47,9 @@ export function useOpenMyCamera() {
       .then((stream) => {
         setStream(stream);
         if (stream) setMyMediaStream(stream);
-        console.log("Got MediaStream:", stream.getVideoTracks());
       })
       .catch((error) => {
-        console.error("Error accessing media devices.", error);
+        console.error('Error accessing media devices.', error);
       });
   };
 }

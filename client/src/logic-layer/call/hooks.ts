@@ -1,8 +1,9 @@
-import { dispatchSendOffer } from "../events/functions";
-import { useIdentifier } from "../user/hooks";
+import { useShallow } from 'zustand/shallow';
+import { dispatchSendOffer } from '../events/functions';
+import { useIdentifier } from '../user/hooks';
 
-import { joinCall, makeNewCall } from "./service";
-import { callStore } from "./store";
+import { joinCall, makeNewCall } from './service';
+import { callStore } from './store';
 
 export function useCallIdentifier() {
   const { callIdentifier } = callStore();
@@ -15,8 +16,29 @@ export function useMembers() {
 }
 
 export function useMembersIdentifiers() {
+  const members = callStore(useShallow((state) => Object.keys(state.members)));
+  return members;
+}
+
+export function useLargeMember() {
   const { members } = callStore();
-  return Object.keys(members);
+  const membersValues = Object.values(members);
+  if (membersValues.length == 0) {
+    return undefined;
+  }
+  return membersValues.filter((m) => m.position === 'large')[0];
+}
+
+export function useSmallMembers() {
+  const { members } = callStore();
+  const membersValues = Object.values(members);
+  return membersValues.filter((m) => m.position === 'small');
+}
+
+export function useHiddenMembers() {
+  const { members } = callStore();
+  const membersValues = Object.values(members);
+  return membersValues.filter((m) => m.position === 'hidden');
 }
 
 export function useCreateCall() {
@@ -63,4 +85,9 @@ export function usePeerConnectionFromMember(memberId: string) {
 export function useMemberName(memberId: string) {
   const { members } = callStore();
   return members[memberId].nickname;
+}
+
+export function useFocusMember() {
+  const { changeMemberAsLarge } = callStore();
+  return (id: string) => changeMemberAsLarge(id);
 }
