@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useMyStream } from '../media-context';
+import { useMyStream, useOpenMyCamera, useShareScreen, useStopSharingScreen } from '../media-context';
 import { useCallIdentifier, useMembersIdentifiers } from '../logic-layer';
 import { Button } from './Button';
 import {
@@ -22,6 +22,11 @@ export const CallRoom = () => {
   const [callIdentifierVisible, setCallIdentifierVisible] = useState(false);
   const [otherMembersVisible, setOtherMembersVisible] = useState(false);
   const focusMember = useFocusMember();
+  const shareScreen = useShareScreen();
+  const stopSharing = useStopSharingScreen();
+  const [isSharing, setIsSharing] = useState(false);
+  const [isCamera, setIsCamera] = useState(true);
+  const openMyCamera = useOpenMyCamera();
 
   useEffect(() => {
     if (myStream && videoRef.current) {
@@ -159,8 +164,35 @@ export const CallRoom = () => {
         <div className='rounded-full bg-blue-400 w-12 p-2 cursor-pointer'>
           <img src='/icons/chat.svg' alt='Chat' />
         </div>
-        <div className='rounded-full bg-blue-600 w-12 p-2 cursor-pointer'>
-          <img src='/icons/screen-share.svg' alt='Screen share' />
+        <div
+          className='rounded-full bg-blue-600 w-12 p-2 cursor-pointer flex justify-center items-center'
+          onClick={() => {
+            if (!isCamera) {
+              openMyCamera();
+              setIsCamera(true);
+            } else {
+              stopSharing();
+              setIsCamera(false);
+            }
+          }}
+        >
+          {!isCamera && <img src='/icons/video.svg' alt='Camera' />}
+          {isCamera && <img src='/icons/stop-video.svg' alt='Stop camera' />}
+        </div>
+        <div
+          className='rounded-full bg-blue-600 w-12 p-2 cursor-pointer flex justify-center items-center'
+          onClick={() => {
+            if (!isSharing) {
+              shareScreen();
+              setIsSharing(true);
+            } else {
+              stopSharing();
+              setIsSharing(false);
+            }
+          }}
+        >
+          {!isSharing && <img src='/icons/screen-share.svg' alt='Screen share' />}
+          {isSharing && <img src='/icons/stop-screen-share.svg' alt='Screen share' />}
         </div>
         <div className='rounded-full bg-red-300 w-12 p-2 cursor-pointer'>
           <img src='/icons/end-call.svg' alt='End call' />

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { generateImageFromString } from '../../utils/functions';
 
 interface Member {
   identifier: string;
@@ -17,8 +18,10 @@ interface CallState {
   removeMember: (id: string) => void;
   clearMembers: () => void;
   changeMemberAsLarge: (id: string) => void;
-  myStream: MediaStream | undefined;
-  setMyMediaStream: (stream: MediaStream) => void;
+  myStream: MediaStream | null;
+  setMyMediaStream: (stream: MediaStream | null) => void;
+  updateVideoStreamForAllPeers: (stream: MediaStream) => void;
+  stopVideoStreamForAllPeers: () => void;
 }
 
 const configuration = {
@@ -70,6 +73,44 @@ export const callStore = create<CallState>()(
         state.members[id] = member;
       });
     },
+    stopVideoStreamForAllPeers: () => {
+      const state = get();
+      const { members } = state;
+      const imageUrl = generateImageFromString('Screen stopped');
+      const img = new Image();
+      img.src = imageUrl;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        if (ctx) ctx.drawImage(img, 0, 0);
+      };
+      const stream = canvas.captureStream();
+      const videoTrack = stream.getVideoTracks()[0];
+      set((state) => {
+        Object.keys(members).forEach((m) => {
+          state.members[m].peerConnection
+            .getSenders()
+            .find((s) => s.track?.kind === 'video')
+            ?.replaceTrack(videoTrack);
+        });
+      });
+    },
+    updateVideoStreamForAllPeers: (stream: MediaStream) => {
+      const state = get();
+      const { members } = state;
+      const [videoTrack] = stream.getVideoTracks();
+      set((state) => {
+        Object.keys(members).forEach((m) => {
+          console.log(state.members[m].peerConnection.getSenders());
+          state.members[m].peerConnection
+            .getSenders()
+            .find((s) => s.track?.kind === 'video')
+            ?.replaceTrack(videoTrack);
+        });
+      });
+    },
     removeMember: (id: string) => {
       set((state) => {
         delete state.members[id];
@@ -91,8 +132,8 @@ export const callStore = create<CallState>()(
         }
       });
     },
-    myStream: undefined,
-    setMyMediaStream: (stream: MediaStream) => {
+    myStream: null,
+    setMyMediaStream: (stream: MediaStream | null) => {
       set((state) => {
         state.myStream = stream;
       });

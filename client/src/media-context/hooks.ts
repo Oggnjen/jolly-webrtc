@@ -40,13 +40,49 @@ export function useOpenMyCamera() {
     audio: true,
   };
   const { setStream } = useContext(MediaStoreContext);
-  const { setMyMediaStream } = callStore();
+  const { setMyMediaStream, updateVideoStreamForAllPeers } = callStore();
   return () => {
     navigator.mediaDevices
       .getUserMedia(constraints)
       .then((stream) => {
         setStream(stream);
         if (stream) setMyMediaStream(stream);
+        updateVideoStreamForAllPeers(stream);
+      })
+      .catch((error) => {
+        console.error('Error accessing media devices.', error);
+      });
+  };
+}
+
+export function useStopSharingScreen() {
+  const { setMyMediaStream, stopVideoStreamForAllPeers } = callStore();
+  return () => {
+    stopVideoStreamForAllPeers();
+  };
+}
+
+export function useShareScreen() {
+  const constraints = {
+    video: {
+      displaySurface: 'browser',
+    },
+    audio: true,
+    preferCurrentTab: false,
+    selfBrowserSurface: 'exclude',
+    systemAudio: 'include',
+    surfaceSwitching: 'include',
+    monitorTypeSurfaces: 'include',
+  };
+  const { setStream } = useContext(MediaStoreContext);
+  const { setMyMediaStream, updateVideoStreamForAllPeers } = callStore();
+  return () => {
+    navigator.mediaDevices
+      .getDisplayMedia(constraints)
+      .then((stream) => {
+        setStream(stream);
+        if (stream) setMyMediaStream(stream);
+        updateVideoStreamForAllPeers(stream);
       })
       .catch((error) => {
         console.error('Error accessing media devices.', error);

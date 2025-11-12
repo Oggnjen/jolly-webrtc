@@ -6,6 +6,8 @@ export {
   useOpenMyCamera,
   useMyStream,
   useSetMyStream,
-} from "./hooks";
+  useShareScreen,
+  useStopSharingScreen,
+} from './hooks';
 
-export { MediaStoreProvider } from "./MediaStoreProvider";
+export { MediaStoreProvider } from './MediaStoreProvider';
