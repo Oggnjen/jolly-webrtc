@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { generateImageFromString } from '../../utils/functions';
 
 interface Member {
   identifier: string;
@@ -10,9 +9,17 @@ interface Member {
   position: 'large' | 'small' | 'hidden';
 }
 
+interface Message {
+  nickname: string;
+  content: string;
+}
+
 interface CallState {
   callIdentifier: string | null;
   setCallIdentifier: (identifier: string | null) => void;
+  messages: Message[];
+  dataChannels: RTCDataChannel[];
+  addMessage: (message: Message) => void;
   members: { [key: string]: Member };
   addMember: (id: string, name: string) => void;
   removeMember: (id: string) => void;
@@ -21,7 +28,9 @@ interface CallState {
   myStream: MediaStream | null;
   setMyMediaStream: (stream: MediaStream | null) => void;
   updateVideoStreamForAllPeers: (stream: MediaStream) => void;
-  stopVideoStreamForAllPeers: () => void;
+  stopVideoStreamForAllPeers: (imageUrl: string) => void;
+  updateMyStream: (track: MediaStreamTrack) => void;
+  toggleMicrophone: () => void;
 }
 
 const configuration = {
@@ -36,14 +45,23 @@ export const callStore = create<CallState>()(
         state.callIdentifier = callIdentifier;
       });
     },
+    messages: [],
     members: {},
+    dataChannels: [],
+    addMessage: (message: Message) => {
+      set((state) => ({
+        messages: [...state.messages, message],
+      }));
+    },
     addMember: (id, name) => {
       const peerConnection = new RTCPeerConnection(configuration);
 
-      // peerConnection.addEventListener('track', async (event) => {
-      //   const [remoteStream] = event.streams
-      //   if (videoRef.current && remoteStream) setStream(remoteStream)
-      // })
+      const dataChannel = peerConnection.createDataChannel('chat');
+
+      dataChannel.addEventListener('message', (e) => {
+        const message = e.data;
+        set((state) => state.messages.push({ nickname: name, content: message }));
+      });
 
       const state = get();
       let position: 'small' | 'large' | 'hidden';
@@ -71,12 +89,12 @@ export const callStore = create<CallState>()(
 
       set((state) => {
         state.members[id] = member;
+        state.dataChannels.push(dataChannel);
       });
     },
-    stopVideoStreamForAllPeers: () => {
+    stopVideoStreamForAllPeers: (imageUrl: string) => {
       const state = get();
       const { members } = state;
-      const imageUrl = generateImageFromString('Screen stopped');
       const img = new Image();
       img.src = imageUrl;
       const canvas = document.createElement('canvas');
@@ -97,13 +115,37 @@ export const callStore = create<CallState>()(
         });
       });
     },
+    updateMyStream: (track: MediaStreamTrack) => {
+      set((state) => {
+        const oldTrack = state.myStream?.getVideoTracks()[0];
+        if (oldTrack) {
+          state.myStream?.removeTrack(oldTrack);
+        }
+        state.myStream?.addTrack(track);
+      });
+    },
+    toggleMicrophone: () => {
+      const state = get();
+      const { members } = state;
+      set((state) => {
+        Object.keys(members).forEach((m) => {
+          const track = state.members[m].peerConnection.getSenders().find((s) => s.track?.kind === 'audio');
+          if (track && track.track) {
+            track.track.enabled = !track.track.enabled;
+            state.members[m].peerConnection
+              .getSenders()
+              .find((s) => s.track?.kind === 'audio')
+              ?.replaceTrack(track.track);
+          }
+        });
+      });
+    },
     updateVideoStreamForAllPeers: (stream: MediaStream) => {
       const state = get();
       const { members } = state;
       const [videoTrack] = stream.getVideoTracks();
       set((state) => {
         Object.keys(members).forEach((m) => {
-          console.log(state.members[m].peerConnection.getSenders());
           state.members[m].peerConnection
             .getSenders()
             .find((s) => s.track?.kind === 'video')

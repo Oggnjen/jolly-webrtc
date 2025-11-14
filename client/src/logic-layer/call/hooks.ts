@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/shallow';
 import { dispatchSendOffer } from '../events/functions';
-import { useIdentifier } from '../user/hooks';
+import { useIdentifier, useNickname } from '../user/hooks';
 
 import { joinCall, makeNewCall } from './service';
 import { callStore } from './store';
@@ -90,4 +90,28 @@ export function useMemberName(memberId: string) {
 export function useFocusMember() {
   const { changeMemberAsLarge } = callStore();
   return (id: string) => changeMemberAsLarge(id);
+}
+
+export function useToggleMicrophone() {
+  const { toggleMicrophone } = callStore();
+
+  return () => toggleMicrophone();
+}
+
+export function useMessages() {
+  const { messages } = callStore();
+  return messages;
+}
+
+export function useSendMessage() {
+  const { addMessage, dataChannels } = callStore();
+  const id = useIdentifier();
+  const name = useNickname()[0];
+  return (content: string) => {
+    if (id != undefined && name != undefined) {
+      console.log('aa');
+      addMessage({ content, nickname: name });
+      dataChannels.forEach((d) => d.send(content));
+    }
+  };
 }

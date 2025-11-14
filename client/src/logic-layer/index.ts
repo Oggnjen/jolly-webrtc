@@ -10,6 +10,9 @@ export {
   useSmallMembers,
   useHiddenMembers,
   useFocusMember,
+  useToggleMicrophone,
+  useMessages,
+  useSendMessage,
 } from './call/hooks';
 
 export { WebsocketWrapper } from './websocket/WebsocketWrapper';

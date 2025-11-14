@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMyStream, useOpenMyCamera, useShareScreen, useStopSharingScreen } from '../media-context';
-import { useCallIdentifier, useMembersIdentifiers } from '../logic-layer';
 import { Button } from './Button';
 import {
   useFocusMember,
   useHiddenMembers,
   useLargeMember,
   useMemberName,
+  useMessages,
   usePeerConnectionFromMember,
   useSmallMembers,
-} from '../logic-layer/call/hooks';
+  useToggleMicrophone,
+  useCallIdentifier,
+  useMembersIdentifiers,
+  useSendMessage,
+} from '../logic-layer';
 
 export const CallRoom = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -19,6 +23,7 @@ export const CallRoom = () => {
   const smallMember = useSmallMembers();
   const hiddenMembers = useHiddenMembers();
   const callIdentifier = useCallIdentifier();
+  const toggleMicrophone = useToggleMicrophone();
   const [callIdentifierVisible, setCallIdentifierVisible] = useState(false);
   const [otherMembersVisible, setOtherMembersVisible] = useState(false);
   const focusMember = useFocusMember();
@@ -26,7 +31,12 @@ export const CallRoom = () => {
   const stopSharing = useStopSharingScreen();
   const [isSharing, setIsSharing] = useState(false);
   const [isCamera, setIsCamera] = useState(true);
+  const [isMicrophoneOn, setIsMicrophoneOn] = useState(true);
   const openMyCamera = useOpenMyCamera();
+  const messages = useMessages();
+  const sendMessage = useSendMessage();
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     if (myStream && videoRef.current) {
@@ -154,15 +164,53 @@ export const CallRoom = () => {
                     setCallIdentifierVisible(false);
                   }}
                 >
-                  <img src='/icons/cross.svg' alt='Chat' />
+                  <img src='/icons/cross.svg' alt='cross' />
                 </div>
               </div>
             </div>
           )}
           <img src='/icons/add-user.svg' alt='Add user' />
         </div>
-        <div className='rounded-full bg-blue-400 w-12 p-2 cursor-pointer'>
-          <img src='/icons/chat.svg' alt='Chat' />
+        <div className='rounded-full bg-blue-400 w-12 p-2 cursor-pointer relative z-20'>
+          <img src='/icons/chat.svg' alt='Chat' onClick={() => setIsChatOpen(!isChatOpen)} />
+          {isChatOpen && (
+            <div className='absolute bg-white p-4 w-[400px] h-[500px] bottom-20 -right-45 cursor-auto z-40'>
+              <div className='overflow-y-scroll h-[400px]'>
+                {messages.map((m) => (
+                  <div className='flex mb-4'>
+                    <div className='italic font-bold'>{m.nickname}:</div>
+                    <div className=''>{m.content}</div>
+                  </div>
+                ))}
+              </div>
+              <div className='h-[50px] flex gap-4'>
+                <input
+                  type='text'
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className='border-[0.5px] border-black rounded-lg w-full'
+                />
+                <Button
+                  text='Send'
+                  onClick={() => {
+                    console.log('halo');
+                    sendMessage(message);
+                    setMessage('');
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+        <div
+          className='rounded-full bg-blue-600 w-12 p-2 cursor-pointer flex justify-center items-center'
+          onClick={() => {
+            toggleMicrophone();
+            setIsMicrophoneOn(!isMicrophoneOn);
+          }}
+        >
+          {isMicrophoneOn && <img src='/icons/mute.svg' alt='Unmute' />}
+          {!isMicrophoneOn && <img src='/icons/unmute.svg' alt='Mute' />}
         </div>
         <div
           className='rounded-full bg-blue-600 w-12 p-2 cursor-pointer flex justify-center items-center'

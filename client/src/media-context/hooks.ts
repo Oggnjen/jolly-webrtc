@@ -1,6 +1,8 @@
 import { useContext } from 'react';
 import { MediaStoreContext } from './MediaContext';
 import { callStore } from '../logic-layer/call/store';
+import { useNickname } from '../logic-layer';
+import { generateImageFromString } from '../utils/functions';
 
 export function useMyVideoStream() {
   const { videoStream } = useContext(MediaStoreContext);
@@ -56,9 +58,23 @@ export function useOpenMyCamera() {
 }
 
 export function useStopSharingScreen() {
-  const { setMyMediaStream, stopVideoStreamForAllPeers } = callStore();
+  const { updateMyStream, stopVideoStreamForAllPeers } = callStore();
+  const nickname = useNickname()[0];
   return () => {
-    stopVideoStreamForAllPeers();
+    const imageUrl = generateImageFromString(nickname || '');
+    const img = new Image();
+    img.src = imageUrl;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      if (ctx) ctx.drawImage(img, 0, 0);
+    };
+    const stream = canvas.captureStream();
+    const videoTrack = stream.getVideoTracks()[0];
+    updateMyStream(videoTrack);
+    stopVideoStreamForAllPeers(imageUrl);
   };
 }
 
