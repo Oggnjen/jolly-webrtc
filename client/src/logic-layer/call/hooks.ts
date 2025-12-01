@@ -109,7 +109,6 @@ export function useSendMessage() {
   const name = useNickname()[0];
   return (content: string) => {
     if (id != undefined && name != undefined) {
-      console.log('aa');
       addMessage({ content, nickname: name });
       dataChannels.forEach((d) => d.send(content));
     }

@@ -19,6 +19,7 @@ interface CallState {
   setCallIdentifier: (identifier: string | null) => void;
   messages: Message[];
   dataChannels: RTCDataChannel[];
+  addDataChannel: (channel: RTCDataChannel) => void;
   addMessage: (message: Message) => void;
   members: { [key: string]: Member };
   addMember: (id: string, name: string) => void;
@@ -35,6 +36,7 @@ interface CallState {
 
 const configuration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  optional: [{ RtpDataChannels: true }],
 };
 
 export const callStore = create<CallState>()(
@@ -48,6 +50,11 @@ export const callStore = create<CallState>()(
     messages: [],
     members: {},
     dataChannels: [],
+    addDataChannel: (channel: RTCDataChannel) => {
+      set((state) => {
+        state.dataChannels.push(channel);
+      });
+    },
     addMessage: (message: Message) => {
       set((state) => ({
         messages: [...state.messages, message],
@@ -56,12 +63,21 @@ export const callStore = create<CallState>()(
     addMember: (id, name) => {
       const peerConnection = new RTCPeerConnection(configuration);
 
-      const dataChannel = peerConnection.createDataChannel('chat');
-
-      dataChannel.addEventListener('message', (e) => {
-        const message = e.data;
-        set((state) => state.messages.push({ nickname: name, content: message }));
-      });
+      // const dataChannel = peerConnection.createDataChannel('chat');
+      // dataChannel.onopen = function (e) {
+      //   console.log(e);
+      //   set((state) => {
+      //     if (e.target != null) state.dataChannels.push(e.target as RTCDataChannel);
+      //   });
+      // };
+      // dataChannel.onerror = function (event) {
+      //   console.error('DataChannel error:', event);
+      // };
+      // dataChannel.onmessage = function (e) {
+      //   console.log('ETO ME');
+      //   const message = e.data;
+      //   set((state) => state.messages.push({ nickname: name, content: message }));
+      // };
 
       const state = get();
       let position: 'small' | 'large' | 'hidden';
@@ -89,7 +105,6 @@ export const callStore = create<CallState>()(
 
       set((state) => {
         state.members[id] = member;
-        state.dataChannels.push(dataChannel);
       });
     },
     stopVideoStreamForAllPeers: (imageUrl: string) => {

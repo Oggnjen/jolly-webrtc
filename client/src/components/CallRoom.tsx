@@ -43,6 +43,12 @@ export const CallRoom = () => {
       videoRef.current.srcObject = myStream;
     }
   }, [myStream, members]);
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      sendMessage(message);
+      setMessage('');
+    }
+  };
 
   return (
     <div className='h-[95dvh]'>
@@ -187,13 +193,15 @@ export const CallRoom = () => {
                 <input
                   type='text'
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                  }}
+                  onKeyDown={handleKeyPress}
                   className='border-[0.5px] border-black rounded-lg w-full'
                 />
                 <Button
                   text='Send'
                   onClick={() => {
-                    console.log('halo');
                     sendMessage(message);
                     setMessage('');
                   }}

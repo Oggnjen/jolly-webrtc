@@ -46,11 +46,17 @@ function addTypedEventListener<T>(type: string, listener: (event: CustomEvent<T>
   window.addEventListener(type, listener as unknown as EventListener);
 }
 
-addTypedEventListener<{ memberId: string }>('send-offer', async (e) => {
-  const { memberId } = e.detail;
+addTypedEventListener<{ memberId: string; name: string }>('send-offer', async (e) => {
+  const { memberId, name } = e.detail;
   const { identifier, nickname } = userStore.getState();
-  const { members } = callStore.getState();
+  const { members, addDataChannel, addMessage } = callStore.getState();
   const peerConnection = members[memberId]?.peerConnection;
+  const dataChannel = peerConnection.createDataChannel('chat');
+  dataChannel.onmessage = function (e) {
+    const message = e.data;
+    addMessage({ nickname: name, content: message });
+  };
+  addDataChannel(dataChannel);
   if (identifier == null) return;
   const offer = await peerConnection.createOffer();
   await peerConnection.setLocalDescription(offer);
@@ -83,13 +89,13 @@ addTypedEventListener<{
 }>('accept-offer-send-answer', async (e) => {
   const { memberId, senderName } = e.detail;
   const { payload } = e.detail;
-  const { addMember } = callStore.getState();
+  const { addMember, addDataChannel, addMessage } = callStore.getState();
   addMember(memberId, senderName);
   const { identifier, nickname } = userStore.getState();
   const { members } = callStore.getState();
   const peerConnection = members[memberId]?.peerConnection;
   if (identifier == null) return;
-  if (peerConnection != null)
+  if (peerConnection != null) {
     peerConnection.onicecandidate = (e) => {
       if (e.candidate) {
         const data: Data = {
@@ -101,6 +107,15 @@ addTypedEventListener<{
         dispatchToSignalingServer(JSON.stringify(data));
       }
     };
+    peerConnection.ondatachannel = function (e) {
+      const channel = e.channel;
+      channel.onmessage = function (e) {
+        const message = e.data;
+        addMessage({ nickname: senderName, content: message });
+      };
+      addDataChannel(channel);
+    };
+  }
   const offer = JSON.parse(payload) as RTCSessionDescriptionInit;
   await peerConnection.setRemoteDescription(offer);
   const answer = await peerConnection.createAnswer();
