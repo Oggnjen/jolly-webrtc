@@ -37,7 +37,7 @@ func main() {
 
 	router.GET("/ws/:identifier", socket.HandleSocketConnection)
 
-	err = router.Run("localhost:8081")
+	err = router.Run("0.0.0.0:8081")
 	if err != nil {
 		return
 	}
