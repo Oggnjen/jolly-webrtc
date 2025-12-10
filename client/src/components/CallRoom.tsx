@@ -13,6 +13,7 @@ import {
   useCallIdentifier,
   useMembersIdentifiers,
   useSendMessage,
+  useExitCall,
 } from '../logic-layer';
 
 export const CallRoom = () => {
@@ -24,6 +25,7 @@ export const CallRoom = () => {
   const hiddenMembers = useHiddenMembers();
   const callIdentifier = useCallIdentifier();
   const toggleMicrophone = useToggleMicrophone();
+  const exitCall = useExitCall();
   const [callIdentifierVisible, setCallIdentifierVisible] = useState(false);
   const [otherMembersVisible, setOtherMembersVisible] = useState(false);
   const focusMember = useFocusMember();
@@ -250,7 +252,7 @@ export const CallRoom = () => {
           {!isSharing && <img src='/icons/screen-share.svg' alt='Screen share' />}
           {isSharing && <img src='/icons/stop-screen-share.svg' alt='Screen share' />}
         </div>
-        <div className='rounded-full bg-red-300 w-12 p-2 cursor-pointer'>
+        <div className='rounded-full bg-red-300 w-12 p-2 cursor-pointer' onClick={() => exitCall()}>
           <img src='/icons/end-call.svg' alt='End call' />
         </div>
       </div>

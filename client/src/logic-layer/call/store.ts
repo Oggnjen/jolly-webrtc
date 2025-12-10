@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { dispatchMemberExitCall } from '../events/functions';
 
 interface Member {
   identifier: string;
@@ -35,7 +36,16 @@ interface CallState {
 }
 
 const configuration = {
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' }, // fallback
+    {
+      urls: [
+        'turn:157.90.241.190:3478',
+      ],
+      username: import.meta.env.VITE_TURN_USERNAME,
+      credential: import.meta.env.VITE_TURN_PASSWORD,
+    },
+  ],
   optional: [{ RtpDataChannels: true }],
 };
 
@@ -62,6 +72,13 @@ export const callStore = create<CallState>()(
     },
     addMember: (id, name) => {
       const peerConnection = new RTCPeerConnection(configuration);
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      peerConnection.onconnectionstatechange = (e) => {
+        if (peerConnection.connectionState == 'disconnected') {
+          dispatchMemberExitCall(id);
+        }
+      };
 
       // const dataChannel = peerConnection.createDataChannel('chat');
       // dataChannel.onopen = function (e) {
@@ -170,7 +187,20 @@ export const callStore = create<CallState>()(
     },
     removeMember: (id: string) => {
       set((state) => {
+        const position = state.members[id].position;
+
         delete state.members[id];
+        if (position == 'large') {
+          const smallMember = Object.values(state.members).find((m) => m.position == 'small');
+          if (smallMember) {
+            smallMember.position = 'large';
+          }
+        } else if (position == 'small') {
+          const smallMember = Object.values(state.members).find((m) => m.position == 'hidden');
+          if (smallMember) {
+            smallMember.position = 'small';
+          }
+        }
       });
     },
     clearMembers: () => {

@@ -9,7 +9,8 @@ export interface Data {
 }
 
 export enum DataType {
-  SDP_OFFER = "SDP_OFFER",
-  SDP_ANSWER = "SDP_ANSWER",
-  ICE_CANDIDATE = "ICE_CANDIDATE",
+  SDP_OFFER = 'SDP_OFFER',
+  SDP_ANSWER = 'SDP_ANSWER',
+  ICE_CANDIDATE = 'ICE_CANDIDATE',
+  EXITING_CALL = 'EXITING_CALL',
 }

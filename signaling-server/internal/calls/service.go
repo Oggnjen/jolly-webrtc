@@ -1,11 +1,16 @@
 package calls
 
 import (
+	"encoding/json"
 	"errors"
-	"github.com/google/uuid"
+	"fmt"
 	"signaling-server/internal/database"
 	"signaling-server/internal/members"
+	"signaling-server/internal/socket"
 	"signaling-server/internal/utils"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 )
 
 func createCall(memberIdentifier string) (CallIdentifierDto, error) {
@@ -60,4 +65,42 @@ func joinCall(callIdentifier string, memberIdentifier string) (JoinedCallDto, er
 	}
 
 	return JoinedCallDto{Identifier: call.Identifier, Members: joinedMembers}, nil
+}
+
+func exitCall(callIdentifier, memberIdentifier string) error {
+	var member members.Member
+
+	result := database.DB.Model(&members.Member{}).Where("identifier = ?", memberIdentifier).Find(&member)
+
+	if result.RowsAffected == 0 {
+		return errors.New("member does not exist")
+	}
+
+	database.DB.Where("identifier = ?", memberIdentifier).Delete(&members.Member{})
+
+	var call Call
+
+	result = database.DB.Where("identifier = ?", callIdentifier).Preload("CallMembers").Find(&call)
+	if result.RowsAffected == 0 {
+		return errors.New("call does not exist")
+	}
+
+	for _, m := range call.CallMembers {
+
+		data := socket.Data{
+			Sender:     memberIdentifier,
+			Recipient:  m.Identifier,
+			RawData:    memberIdentifier,
+			Type:       "EXITING_CALL",
+			SenderName: m.Nickname,
+		}
+		payload, err := json.Marshal(data)
+		if err != nil {
+			fmt.Println("Error occured")
+			break
+		}
+		socket.HubInstance.SendMessageToUser(m.Identifier, websocket.TextMessage, payload)
+	}
+
+	return nil
 }

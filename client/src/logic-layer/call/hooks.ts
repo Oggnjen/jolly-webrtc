@@ -2,7 +2,7 @@ import { useShallow } from 'zustand/shallow';
 import { dispatchSendOffer } from '../events/functions';
 import { useIdentifier, useNickname } from '../user/hooks';
 
-import { joinCall, makeNewCall } from './service';
+import { exitCall, joinCall, makeNewCall } from './service';
 import { callStore } from './store';
 
 export function useCallIdentifier() {
@@ -111,6 +111,33 @@ export function useSendMessage() {
     if (id != undefined && name != undefined) {
       addMessage({ content, nickname: name });
       dataChannels.forEach((d) => d.send(content));
+    }
+  };
+}
+
+export function useExitCall() {
+  const userIdentifer = useIdentifier();
+  const { callIdentifier } = callStore();
+  return () => {
+    if (userIdentifer && callIdentifier) {
+      exitCall(userIdentifer, callIdentifier).then((res) => {
+        if (res.status == 200) {
+          window.location.reload();
+        }
+      });
+    }
+  };
+}
+
+export function useDisconnectMember() {
+  const { callIdentifier, removeMember } = callStore();
+  return (memberId: string) => {
+    if (memberId && callIdentifier) {
+      exitCall(memberId, callIdentifier).then((res) => {
+        if (res.status == 200) {
+          removeMember(memberId);
+        }
+      });
     }
   };
 }

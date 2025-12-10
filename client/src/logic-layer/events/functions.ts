@@ -165,3 +165,16 @@ addTypedEventListener<{ memberId: string; payload: string }>('accept-ice', async
     await peerConnection.addIceCandidate(ice);
   }
 });
+
+export const dispatchMemberExitCall = (memberId: string) => {
+  const event: GetDataEvent = new CustomEvent('member-exit-call', {
+    detail: { memberId, payload: '' },
+  });
+  window.dispatchEvent(event);
+};
+
+addTypedEventListener<{ memberId: string }>('member-exit-call', async (e) => {
+  const { memberId } = e.detail;
+  const { removeMember } = callStore.getState();
+  removeMember(memberId);
+});

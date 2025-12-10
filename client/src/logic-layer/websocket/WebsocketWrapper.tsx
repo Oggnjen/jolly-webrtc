@@ -1,11 +1,14 @@
-import { useEffect, type ReactNode } from "react";
-import { useIdentifier } from "../user/hooks";
-import { DataType, type Data, type SendToSignalingServerEvent } from "./types";
+import { useEffect, type ReactNode } from 'react';
+import { useIdentifier } from '../user/hooks';
+import { DataType, type Data, type SendToSignalingServerEvent } from './types';
 import {
   dispatchAcceptAnswer,
   dispatchAcceptIceCandidate,
   dispatchAcceptOfferAndSendAnswer,
-} from "../events/functions";
+  dispatchMemberExitCall,
+} from '../events/functions';
+
+const WEBSOCKET_URL = import.meta.env.VITE_WS_URL;
 
 export const WebsocketWrapper = ({ children }: { children: ReactNode }) => {
   // const [ws, setWs] = useState<WebSocket | null>(null);
@@ -13,42 +16,38 @@ export const WebsocketWrapper = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Establish WebSocket connection
     if (identifier != null) {
-      const newWs = new WebSocket(`ws://localhost:8081/ws/${identifier}`);
+      const newWs = new WebSocket(`${WEBSOCKET_URL}/${identifier}`);
 
       newWs.onopen = () => {
-        console.log("WebSocket connection established.");
+        console.log('WebSocket connection established.');
         // Send initial message or subscribe to topics
       };
 
-      window.addEventListener("send-to-signaling-server", ((
-        e: SendToSignalingServerEvent
-      ) => {
+      window.addEventListener('send-to-signaling-server', ((e: SendToSignalingServerEvent) => {
         newWs?.send(e.detail.payload);
       }) as EventListener);
 
       newWs.onmessage = (event) => {
         const data = JSON.parse(event.data) as Data;
         if (data.Type == DataType.SDP_OFFER) {
-          dispatchAcceptOfferAndSendAnswer(
-            data.Sender,
-            data.RawData,
-            data.SenderName || ""
-          );
+          dispatchAcceptOfferAndSendAnswer(data.Sender, data.RawData, data.SenderName || '');
         } else if (data.Type == DataType.SDP_ANSWER) {
           dispatchAcceptAnswer(data.Sender, data.RawData);
         } else if (data.Type == DataType.ICE_CANDIDATE) {
           dispatchAcceptIceCandidate(data.Sender, data.RawData);
+        } else if (data.Type == DataType.EXITING_CALL) {
+          dispatchMemberExitCall(data.RawData);
         }
         // const data = JSON.parse(event.data);
         // setMessages((prevMessages) => [...prevMessages, data]);
       };
 
       newWs.onclose = () => {
-        console.log("WebSocket connection closed.");
+        console.log('WebSocket connection closed.');
       };
 
       newWs.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        console.error('WebSocket error:', error);
       };
 
       // setWs(newWs);

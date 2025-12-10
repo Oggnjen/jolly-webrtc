@@ -13,6 +13,8 @@ export {
   useToggleMicrophone,
   useMessages,
   useSendMessage,
+  useExitCall,
+  useDisconnectMember,
 } from './call/hooks';
 
 export { WebsocketWrapper } from './websocket/WebsocketWrapper';

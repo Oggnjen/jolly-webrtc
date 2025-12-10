@@ -32,6 +32,7 @@ func main() {
 	{
 		callsGroup.POST("", calls.CreateCallHandler)
 		callsGroup.POST("/join", calls.JoinCallHandler)
+		callsGroup.POST("/exit", calls.ExitCallHandler)
 	}
 
 	router.GET("/ws/:identifier", socket.HandleSocketConnection)
