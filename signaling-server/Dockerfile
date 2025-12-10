@@ -43,7 +43,7 @@ WORKDIR /root/
 COPY --from=builder /app/app .
 
 # Expose app port (change if your app uses another)
-EXPOSE 8088
+EXPOSE 8081
 
 # Start app
 CMD ["./app"]
