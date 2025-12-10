@@ -1,13 +1,13 @@
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
-import { dispatchMemberExitCall } from '../events/functions';
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
+import { dispatchMemberExitCall } from "../events/functions";
 
 interface Member {
   identifier: string;
   nickname: string;
   peerConnection: RTCPeerConnection;
   mediaStream: MediaStream | undefined;
-  position: 'large' | 'small' | 'hidden';
+  position: "large" | "small" | "hidden";
 }
 
 interface Message {
@@ -37,11 +37,9 @@ interface CallState {
 
 const configuration = {
   iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' }, // fallback
+    { urls: "stun:stun.l.google.com:19302" }, // fallback
     {
-      urls: [
-        'turn:157.90.241.190:3478',
-      ],
+      urls: ["turn:157.90.241.190:3478"],
       username: import.meta.env.VITE_TURN_USERNAME,
       credential: import.meta.env.VITE_TURN_PASSWORD,
     },
@@ -75,7 +73,8 @@ export const callStore = create<CallState>()(
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       peerConnection.onconnectionstatechange = (e) => {
-        if (peerConnection.connectionState == 'disconnected') {
+        console.log("Changed peer state", e);
+        if (peerConnection.connectionState == "disconnected") {
           dispatchMemberExitCall(id);
         }
       };
@@ -97,14 +96,14 @@ export const callStore = create<CallState>()(
       // };
 
       const state = get();
-      let position: 'small' | 'large' | 'hidden';
+      let position: "small" | "large" | "hidden";
 
       if (Object.keys(state.members).length === 0) {
-        position = 'large';
+        position = "large";
       } else if (Object.keys(state.members).length > 2) {
-        position = 'hidden';
+        position = "hidden";
       } else {
-        position = 'small';
+        position = "small";
       }
 
       const member: Member = {
@@ -117,7 +116,9 @@ export const callStore = create<CallState>()(
 
       const { myStream } = state;
       if (myStream) {
-        myStream.getTracks().forEach((t) => peerConnection.addTrack(t, myStream));
+        myStream
+          .getTracks()
+          .forEach((t) => peerConnection.addTrack(t, myStream));
       }
 
       set((state) => {
@@ -129,8 +130,8 @@ export const callStore = create<CallState>()(
       const { members } = state;
       const img = new Image();
       img.src = imageUrl;
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
       img.onload = () => {
         canvas.width = img.width;
         canvas.height = img.height;
@@ -142,7 +143,7 @@ export const callStore = create<CallState>()(
         Object.keys(members).forEach((m) => {
           state.members[m].peerConnection
             .getSenders()
-            .find((s) => s.track?.kind === 'video')
+            .find((s) => s.track?.kind === "video")
             ?.replaceTrack(videoTrack);
         });
       });
@@ -161,12 +162,14 @@ export const callStore = create<CallState>()(
       const { members } = state;
       set((state) => {
         Object.keys(members).forEach((m) => {
-          const track = state.members[m].peerConnection.getSenders().find((s) => s.track?.kind === 'audio');
+          const track = state.members[m].peerConnection
+            .getSenders()
+            .find((s) => s.track?.kind === "audio");
           if (track && track.track) {
             track.track.enabled = !track.track.enabled;
             state.members[m].peerConnection
               .getSenders()
-              .find((s) => s.track?.kind === 'audio')
+              .find((s) => s.track?.kind === "audio")
               ?.replaceTrack(track.track);
           }
         });
@@ -180,7 +183,7 @@ export const callStore = create<CallState>()(
         Object.keys(members).forEach((m) => {
           state.members[m].peerConnection
             .getSenders()
-            .find((s) => s.track?.kind === 'video')
+            .find((s) => s.track?.kind === "video")
             ?.replaceTrack(videoTrack);
         });
       });
@@ -190,15 +193,19 @@ export const callStore = create<CallState>()(
         const position = state.members[id].position;
 
         delete state.members[id];
-        if (position == 'large') {
-          const smallMember = Object.values(state.members).find((m) => m.position == 'small');
+        if (position == "large") {
+          const smallMember = Object.values(state.members).find(
+            (m) => m.position == "small"
+          );
           if (smallMember) {
-            smallMember.position = 'large';
+            smallMember.position = "large";
           }
-        } else if (position == 'small') {
-          const smallMember = Object.values(state.members).find((m) => m.position == 'hidden');
+        } else if (position == "small") {
+          const smallMember = Object.values(state.members).find(
+            (m) => m.position == "hidden"
+          );
           if (smallMember) {
-            smallMember.position = 'small';
+            smallMember.position = "small";
           }
         }
       });
@@ -210,10 +217,12 @@ export const callStore = create<CallState>()(
     },
     changeMemberAsLarge: (id: string) => {
       const state = get();
-      const largeMember = Object.values(state.members).find((m) => m.position == 'large');
+      const largeMember = Object.values(state.members).find(
+        (m) => m.position == "large"
+      );
       const oldPosition = state.members[id].position;
       set((state) => {
-        state.members[id].position = 'large';
+        state.members[id].position = "large";
         if (largeMember) {
           state.members[largeMember.identifier].position = oldPosition;
         }
