@@ -93,6 +93,7 @@ export const CallRoom = () => {
           {members.length != 0 && (
             <video
               ref={videoRef}
+              muted
               autoPlay
               playsInline
               className={`
